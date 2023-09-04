@@ -1,0 +1,28 @@
+version: 'v3'
+tasks:
+  init:
+    cmds:
+      - docker network create brgo
+      - docker volume create --name brgo-cd
+  gitserver:
+    cmds:
+      -  docker run  --network=brgo --rm -v brgo-cd:/brgo-cd -p 8080:8080 -e TMP_DIR_PREFIX=/brgo-cd --name brgo-cd-gitserver brgo-cd/gitserver:0.0.1
+  applyserver:
+    cmds:
+      - docker run --network=brgo --rm -v $(pwd)/kubeconfig.yaml:/mnt/kubeconfig.yaml:ro --volumes-from brgo-cd-gitserver -e BRGO_GIT_SERVER_BASE_URL=http://brgo-cd-gitserver:8080 brgo-cd/applyserver:0.0.1
+  build_gitserver:
+    cmds:
+      -  docker build -t brgo-cd/gitserver:0.0.1 -f images/gitserver/Dockerfile .
+  build_applyserver:
+    cmds:
+      - docker build -t brgo-cd/applyserver:0.0.1 -f images/applyserver/Dockerfile .
+  build_base_git:
+    cmds:
+      - docker build -t brgo-cd/bases/git:0.0.1 -f images/bases/git/Dockerfile images/bases/git
+  build_base_ubuntu:
+    cmds:
+      - docker build -t brgo-cd/bases/ubuntu:22.04 -f images/bases/ubuntu/Dockerfile images/bases/ubuntu
+  build_base_kubectl:
+    cmds:
+      - docker build -t brgo-cd/bases/kubectl:0.0.1 -f images/bases/kubectl/Dockerfile images/bases/kubectl
+

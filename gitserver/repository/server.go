@@ -1,4 +1,4 @@
-package gitserver
+package repository
 
 import (
 	"errors"
@@ -8,12 +8,11 @@ import (
 	"os/exec"
 )
 
-func CloneRepo(repoUrl string, deferCleanup bool) (string, error) {
+func CloneRepo(repoUrl string, deferCleanup bool, tempDirPrefix string) (string, error) {
 
-	dirName, err := os.MkdirTemp("", "repoTarget")
+	dirName, err := os.MkdirTemp(tempDirPrefix, "repoTarget")
 	if err != nil {
 		return dirName, errors.New(fmt.Sprintln("Could not create tmpDir for cloning:", err))
-
 	}
 	if deferCleanup {
 		defer os.RemoveAll(dirName)

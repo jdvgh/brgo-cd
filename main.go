@@ -6,22 +6,32 @@ import (
 	"path/filepath"
 
 	"github.com/jdvgh/brgo-cd/applyserver"
-	"github.com/jdvgh/brgo-cd/gitserver"
+	gitserver "github.com/jdvgh/brgo-cd/gitserver/http"
 )
 
 func main() {
 	kubeConfigPath, ok := os.LookupEnv("KUBECONFIG")
 	if !ok {
-		log.Fatalf("Environ KUBECONFIG not set - please set it")
+		log.Fatalln("Environ KUBECONFIG not set - please set it")
+	}
+	repoUrl, ok := os.LookupEnv("REPO_URL")
+	if !ok {
+		log.Fatalln("Environ REPO_URL not set - please set it")
+	}
+	brgoGitServerBaseUrl, ok := os.LookupEnv("BRGO_GIT_SERVER_BASE_URL")
+	if !ok {
+		log.Println("Environ BRGO_GIT_SERVER_BASE_URL not set - using default http://0.0.0.0:8080")
+		brgoGitServerBaseUrl = "http://0.0.0.0:8080"
 	}
 	_, err := os.ReadFile(kubeConfigPath)
 	if err != nil {
 		log.Fatalf("Could not Read kubeconfig at : %v - err: %v ", kubeConfigPath, err)
 	}
-	repoUrl := "https://github.com/jdvgh/brgo-cd.git"
-	gitDir, err := gitserver.CloneRepo(repoUrl, false)
+
+	gitDir, err := gitserver.SendCloneRepoRequest(repoUrl, brgoGitServerBaseUrl)
+	// gitDir, err := repository.CloneRepo(repoUrl, false)
 	if err != nil {
-		log.Fatalf("gitserver.CloneRepo(%v) failed - err : %v", repoUrl, err)
+		log.Fatalf("repository.CloneRepo(%v) failed - err : %v", repoUrl, err)
 	}
 	defer os.RemoveAll(gitDir)
 	kustomizePath := filepath.Join(gitDir, "k8s", "overlays", "k3s")
@@ -29,6 +39,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("applyserver.Kustomiyefolder(%v) failed - err: %v", kustomizePath, err)
 	}
+	defer os.Remove(fileName)
 	err = applyserver.ApplyFile(fileName, kubeConfigPath)
 	if err != nil {
 
