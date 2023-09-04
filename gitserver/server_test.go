@@ -8,7 +8,7 @@ import (
 
 func TestCloneRepo(t *testing.T) {
 	repoUrl := "https://github.com/jdvgh/brgo-cd.git"
-	err := gitserver.CloneRepo(repoUrl)
+	_, err := gitserver.CloneRepo(repoUrl, true)
 	if err != nil {
 		t.Errorf("gitserver.CloneRepo(%v) failed", repoUrl)
 	}

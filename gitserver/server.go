@@ -8,37 +8,37 @@ import (
 	"os/exec"
 )
 
-func CloneRepo(repoUrl string) error {
+func CloneRepo(repoUrl string, deferCleanup bool) (string, error) {
 
 	dirName, err := os.MkdirTemp("", "repoTarget")
 	if err != nil {
-		return errors.New(fmt.Sprintln("Could not create tmpDir for cloning:", err))
+		return dirName, errors.New(fmt.Sprintln("Could not create tmpDir for cloning:", err))
 
 	}
-
-	defer os.RemoveAll(dirName)
+	if deferCleanup {
+		defer os.RemoveAll(dirName)
+	}
 	log.Println("Created tempDir:", dirName)
 	_, lookErr := exec.LookPath("git")
 	if lookErr != nil {
-		return errors.New(fmt.Sprintln("Could not find git executable:", lookErr))
+		return dirName, errors.New(fmt.Sprintln("Could not find git executable:", lookErr))
 	}
 	gitCmd := exec.Command("git", "clone", repoUrl, dirName)
 	gitCmdOut, err := gitCmd.Output()
 	if err != nil {
 
-		return errors.New(fmt.Sprintln("Could not clone:", err))
+		return dirName, errors.New(fmt.Sprintln("Could not clone:", err))
 	}
 	log.Println(gitCmdOut)
 	log.Println("Successfully cloned repo:", repoUrl)
 
 	cloneContent, err := os.ReadDir(dirName)
 	if err != nil {
-		return errors.New(fmt.Sprintln("Could not read content of cloned repo:", repoUrl, " at :", dirName))
+		return dirName, errors.New(fmt.Sprintln("Could not read content of cloned repo:", repoUrl, " at :", dirName))
 	}
 	log.Println("Content of cloned Repo:")
 	for _, fileName := range cloneContent {
-		fmt.Println(fileName)
+		log.Println(fileName)
 	}
-	return nil
+	return dirName, nil
 }
-
