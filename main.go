@@ -1,12 +1,13 @@
 package main
 
 import (
+	"context"
 	"log"
 	"os"
 	"path/filepath"
 
 	"github.com/jdvgh/brgo-cd/applyserver"
-	gitserver "github.com/jdvgh/brgo-cd/gitserver/http"
+	gitserver "github.com/jdvgh/brgo-cd/gitserver"
 )
 
 func main() {
@@ -20,19 +21,20 @@ func main() {
 	}
 	brgoGitServerBaseUrl, ok := os.LookupEnv("BRGO_GIT_SERVER_BASE_URL")
 	if !ok {
-		log.Println("Environ BRGO_GIT_SERVER_BASE_URL not set - using default http://0.0.0.0:8080")
-		brgoGitServerBaseUrl = "http://0.0.0.0:8080"
+		log.Println("Environ BRGO_GIT_SERVER_BASE_URL not set - using default tcp://0.0.0.0:50051")
+		brgoGitServerBaseUrl = "tcp://0.0.0.0:50051"
 	}
 	_, err := os.ReadFile(kubeConfigPath)
 	if err != nil {
 		log.Fatalf("Could not Read kubeconfig at : %v - err: %v ", kubeConfigPath, err)
 	}
-
-	gitDir, err := gitserver.SendCloneRepoRequest(repoUrl, brgoGitServerBaseUrl)
-	// gitDir, err := repository.CloneRepo(repoUrl, false)
+	gitClient, err := gitserver.NewClientWithAddress(brgoGitServerBaseUrl)
+	cloneReq := &gitserver.CloneRepoRequest{RepoUrl: repoUrl}
+	cloneResp, err := gitClient.CloneRepo(context.Background(), cloneReq)
 	if err != nil {
-		log.Fatalf("repository.CloneRepo(%v) failed - err : %v", repoUrl, err)
+		log.Fatalf("gitClient.CloneRepo(%v) failed - err : %v", repoUrl, err)
 	}
+	gitDir := cloneResp.Folder
 	defer os.RemoveAll(gitDir)
 	kustomizePath := filepath.Join(gitDir, "k8s", "overlays", "k3s")
 	fileName, err := applyserver.KustomizeFolder(kustomizePath)

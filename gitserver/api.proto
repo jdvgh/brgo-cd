@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+
+option go_package = "github.com/jdvgh/brgo-cd/gitserver";
+package gitserver;
+
+message CloneRepoRequest {
+    string repoUrl = 1; 
+    string brgoGitServerBaseUrl  = 2;
+}
+
+message CloneRepoResponse {
+    string repoUrl = 1; 
+    string brgoGitServerBaseUrl  = 2;
+    string result = 3;
+    string folder = 4;
+}
+
+service CloneRepoService {
+  rpc CloneRepo(CloneRepoRequest) returns (CloneRepoResponse) {}
+}

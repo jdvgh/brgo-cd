@@ -1,14 +1,27 @@
-package repository
+package main
 
 import (
 	"errors"
 	"fmt"
+	gitserver "github.com/jdvgh/brgo-cd/gitserver"
+	"golang.org/x/net/context"
 	"log"
 	"os"
 	"os/exec"
 )
 
-func CloneRepo(repoUrl string, deferCleanup bool, tempDirPrefix string) (string, error) {
+func (s *Server) CloneRepo(ctx context.Context, req *gitserver.CloneRepoRequest) (*gitserver.CloneRepoResponse, error) {
+	log.Printf("Received message from client: %s", req)
+
+	folder, err := cloneRepo(req.RepoUrl, true, "")
+	res := fmt.Sprint(err)
+	if err == nil {
+		res = "OK"
+	}
+    return &gitserver.CloneRepoResponse{RepoUrl: req.RepoUrl, BrgoGitServerBaseUrl: req.BrgoGitServerBaseUrl, Result: res, Folder: folder}, nil
+}
+
+func cloneRepo(repoUrl string, deferCleanup bool, tempDirPrefix string) (string, error) {
 
 	dirName, err := os.MkdirTemp(tempDirPrefix, "repoTarget")
 	if err != nil {

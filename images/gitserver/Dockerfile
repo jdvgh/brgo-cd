@@ -4,7 +4,7 @@ WORKDIR /go/src/app
 COPY . . 
 RUN go mod download
 
-RUN CGO_ENABLED=0 go build  -o /go/bin/main  ./gitserver
+RUN CGO_ENABLED=0 go build  -o /go/bin/main  ./gitserver/service
 
 FROM brgo-cd/bases/git:0.0.1 as run 
 # RUN groupadd -r runner && useradd --no-log-init -r -g runner runner
