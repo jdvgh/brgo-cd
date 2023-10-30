@@ -1,4 +1,4 @@
-version: 'v3'
+version: '3'
 tasks:
   init:
     cmds:
@@ -6,10 +6,22 @@ tasks:
       - docker volume create --name brgo-cd
   gitserver:
     cmds:
-      -  docker run  --network=brgo --rm -v brgo-cd:/brgo-cd -p 8080:8080 -e TMP_DIR_PREFIX=/brgo-cd --name brgo-cd-gitserver brgo-cd/gitserver:0.0.1
+      -  docker run  --network=brgo --rm -v brgo-cd:/brgo-cd -p 50051:50051 -e TMP_DIR_PREFIX=/brgo-cd --name brgo-cd-gitserver brgo-cd/gitserver:0.0.1
+  git:
+    env:
+      TMP_DIR_PREFIX: /tmp
+    cmds:
+      - go run ./gitserver/service
+  apply:
+    env:
+      BRGO_GIT_SERVER_BASE_URL: 0.0.0.0:50051
+      KUBECONFIG: kubeconfig.yaml
+      REPO_URL:  https://github.com/jdvgh/sample-manifests.git
+    cmds:
+      - go run main.go
   applyserver:
     cmds:
-      - docker run --network=brgo --rm -v $(pwd)/kubeconfig.yaml:/mnt/kubeconfig.yaml:ro --volumes-from brgo-cd-gitserver -e BRGO_GIT_SERVER_BASE_URL=http://brgo-cd-gitserver:8080 brgo-cd/applyserver:0.0.1
+      - docker run --network=brgo --rm -v $(pwd)/kubeconfig.yaml:/mnt/kubeconfig.yaml:ro --volumes-from brgo-cd-gitserver -e BRGO_GIT_SERVER_BASE_URL=brgo-cd-gitserver:50051 brgo-cd/applyserver:0.0.1
   build_gitserver:
     cmds:
       -  docker build -t brgo-cd/gitserver:0.0.1 -f images/gitserver/Dockerfile .
@@ -25,4 +37,13 @@ tasks:
   build_base_kubectl:
     cmds:
       - docker build -t brgo-cd/bases/kubectl:0.0.1 -f images/bases/kubectl/Dockerfile images/bases/kubectl
+  build_bases:
+    cmds:
+      - task: build_base_ubuntu
+      - task: build_base_git
+      - task: build_base_kubectl
+  build_others:
+    cmds:
+      - task: build_applyserver
+      - task: build_gitserver 
 
