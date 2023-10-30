@@ -4,6 +4,10 @@ tasks:
     cmds:
       - docker network create brgo
       - docker volume create --name brgo-cd
+  ci:
+    cmds:
+      -  docker run --rm -it -v $(pwd):/workspace --workdir /workspace brgo-cd/bases/ci:0.0.1
+
   gitserver:
     cmds:
       -  docker run  --network=brgo --rm -v brgo-cd:/brgo-cd -p 50051:50051 -e TMP_DIR_PREFIX=/brgo-cd --name brgo-cd-gitserver brgo-cd/gitserver:0.0.1
@@ -37,13 +41,24 @@ tasks:
   build_base_kubectl:
     cmds:
       - docker build -t brgo-cd/bases/kubectl:0.0.1 -f images/bases/kubectl/Dockerfile images/bases/kubectl
+  build_base_ci:
+    cmds:
+      - docker build -t brgo-cd/bases/ci:0.0.1 -f images/bases/ci/Dockerfile images/bases/ci
   build_bases:
     cmds:
       - task: build_base_ubuntu
       - task: build_base_git
       - task: build_base_kubectl
+      - task: build_base_ci
   build_others:
     cmds:
       - task: build_applyserver
       - task: build_gitserver 
-
+  build_all:
+    cmds:
+      - task: build_bases
+      - task: build_others
+  test_all:
+    cmds:
+      - go test -v ./applyserver
+      - go test -v ./gitserver/service

@@ -1,0 +1,44 @@
+# This workflow will build a BrgoCDs servers and run tests against them
+
+name: BrgoCD
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Init dependencies
+      run: |
+        apt update -y
+        apt install -y git
+        #  kubectl
+        curl -LO "https://dl.k8s.io/release/v1.28.1/bin/linux/amd64/kubectl"
+        curl -LO "https://dl.k8s.io/v1.28.1/bin/linux/amd64/kubectl.sha256"
+        echo "$(cat kubectl.sha256)  kubectl" | sha256sum --check
+        install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+        chmod +x kubectl
+        mkdir -p ~/.local/bin
+        cp ./kubectl ~/.local/bin/kubectl
+        export PATH=$PATH:~/.local/bin:/root/.local/bin
+        # Taskfile
+        sh -c "$(curl --location https://taskfile.dev/install.sh)" -- -d
+        # Go 1.12.3
+        curl -LO "https://go.dev/dl/go1.21.3.linux-amd64.tar.gz"
+        echo "1241381b2843fae5a9707eec1f8fb2ef94d827990582c7c7c32f5bdfbfd420c8  go1.21.3.linux-amd64.tar.gz" | sha256sum --check
+        tar -C /usr/local -xzf go1.21.3.linux-amd64.tar.gz 
+        export PATH=$PATH:/usr/local/go/bin
+
+    - name: Build
+      run: go build -v ./...
+
+    - name: Test
+      run: go test -v ./...
+
