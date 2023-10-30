@@ -1,0 +1,10 @@
+# Ignore everything
+*
+
+# but ...
+!go.mod
+!go.sum
+!main.go
+!gitserver/**/*.go
+!gitserver/**/*.proto
+!applyserver/**/*.go

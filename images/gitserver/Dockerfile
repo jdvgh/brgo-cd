@@ -7,7 +7,7 @@ RUN go mod download
 RUN CGO_ENABLED=0 go build  -o /go/bin/main  ./gitserver/service
 
 FROM brgo-cd/bases/git:0.0.1 as run 
-COPY --from=build --chown=runner:runner /go/bin/main /
+COPY --from=build /go/bin/main /
 ENV GRPC_PORT=50051
 ENV TMP_DIR_PREFIX=/var/gitmnt
 EXPOSE 50051
