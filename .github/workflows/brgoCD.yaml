@@ -17,8 +17,8 @@ jobs:
 
     - name: Init dependencies
       run: |
-        apt update -y
-        apt install -y git
+        sudo apt update -y
+        sudo apt install -y git
         #  kubectl
         curl -LO "https://dl.k8s.io/release/v1.28.1/bin/linux/amd64/kubectl"
         curl -LO "https://dl.k8s.io/v1.28.1/bin/linux/amd64/kubectl.sha256"
@@ -37,7 +37,7 @@ jobs:
         export PATH=$PATH:/usr/local/go/bin
 
     - name: Build
-      run:  task build_go
+      run: task build_go
 
     - name: Test
       run: task test_go
