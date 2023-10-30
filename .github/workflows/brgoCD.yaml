@@ -36,6 +36,7 @@ jobs:
         echo "1241381b2843fae5a9707eec1f8fb2ef94d827990582c7c7c32f5bdfbfd420c8  go1.21.3.linux-amd64.tar.gz" | sha256sum --check
         sudo tar -C /usr/local -xzf go1.21.3.linux-amd64.tar.gz 
         export PATH=$PATH:/usr/local/go/bin
+        go version
 
     - name: Build
       run: task build_go
