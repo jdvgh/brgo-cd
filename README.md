@@ -7,11 +7,7 @@ This is what Brgo-CD is about.
 
 ```
 task init
-task build_base_ubuntu
-task build_base_git
-task build_base_kubectl
-task build_gitserver
-task build_applyserver
+task build_all
 task gitserver
 task applyserver
 ```
