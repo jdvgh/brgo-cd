@@ -23,10 +23,10 @@ jobs:
         curl -LO "https://dl.k8s.io/release/v1.28.1/bin/linux/amd64/kubectl"
         curl -LO "https://dl.k8s.io/v1.28.1/bin/linux/amd64/kubectl.sha256"
         echo "$(cat kubectl.sha256)  kubectl" | sha256sum --check
-        install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
-        chmod +x kubectl
-        mkdir -p ~/.local/bin
-        cp ./kubectl ~/.local/bin/kubectl
+        sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+        sudo chmod +x kubectl
+        sudo mkdir -p ~/.local/bin
+        sudo cp ./kubectl ~/.local/bin/kubectl
         export PATH=$PATH:~/.local/bin:/root/.local/bin
         # Taskfile
         sh -c "$(curl --location https://taskfile.dev/install.sh)" -- -d
