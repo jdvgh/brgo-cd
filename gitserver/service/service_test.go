@@ -2,10 +2,10 @@ package main
 
 import (
 	"context"
-	"testing"
 	"github.com/google/go-cmp/cmp"
-	"google.golang.org/protobuf/testing/protocmp"
 	gitserver "github.com/jdvgh/brgo-cd/gitserver"
+	"google.golang.org/protobuf/testing/protocmp"
+	"testing"
 )
 
 func Test_SendCloneRepo(t *testing.T) {
@@ -19,13 +19,13 @@ func Test_SendCloneRepo(t *testing.T) {
 		{
 			name: "Service returns sent message",
 			givenRequest: &gitserver.CloneRepoRequest{
-				RepoUrl: "https://github.com/jdvgh/sample-manifests.git",
-                BrgoGitServerBaseUrl: "tcp://0.0.0.0:50051",
+				RepoUrl:              "https://github.com/jdvgh/sample-manifests.git",
+				BrgoGitServerBaseUrl: "tcp://0.0.0.0:50051",
 			},
 			expectedResponse: &gitserver.CloneRepoResponse{
-				RepoUrl: "https://github.com/jdvgh/sample-manifests.git",
-                BrgoGitServerBaseUrl: "tcp://0.0.0.0:50051",
-                Result: "OK",
+				RepoUrl:              "https://github.com/jdvgh/sample-manifests.git",
+				BrgoGitServerBaseUrl: "tcp://0.0.0.0:50051",
+				Result:               "OK",
 			},
 		},
 	}
@@ -50,10 +50,9 @@ func Test_SendCloneRepo(t *testing.T) {
 				return
 			}
 
-            if diff := cmp.Diff(tc.expectedResponse, resp, protocmp.IgnoreFields(resp, "folder"), protocmp.Transform()); diff != "" {
+			if diff := cmp.Diff(tc.expectedResponse, resp, protocmp.IgnoreFields(resp, "folder"), protocmp.Transform()); diff != "" {
 				t.Errorf("got %v, want %v, diff (-want +got) %s", resp, tc.expectedResponse, diff)
 			}
 		})
 	}
 }
-

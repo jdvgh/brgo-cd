@@ -4,9 +4,8 @@ import (
 	"fmt"
 	"log"
 	"net"
-
+	"os"
 	"google.golang.org/grpc"
-
 	gitserver "github.com/jdvgh/brgo-cd/gitserver"
 )
 
@@ -16,9 +15,9 @@ const (
 )
 
 type Server struct {
-    gitserver.UnimplementedCloneRepoServiceServer
-
-	port              int
+	gitserver.UnimplementedCloneRepoServiceServer
+	TempDirPrefix string
+	port          int
 }
 
 func main() {
@@ -29,10 +28,15 @@ func main() {
 	}
 
 	grpcServer := grpc.NewServer()
+	tempDirPrefix, ok := os.LookupEnv("TMP_DIR_PREFIX")
+	if !ok {
+		log.Fatalln("Environ TMP_DIR_PREFIX not set - please set it")
+	}
 
-	gitServer := Server{}
+	gitServer := Server{
+		TempDirPrefix: tempDirPrefix}
 
-    gitserver.RegisterCloneRepoServiceServer(grpcServer, &gitServer)
+	gitserver.RegisterCloneRepoServiceServer(grpcServer, &gitServer)
 
 	fmt.Printf("Starting gRPC-server. Listening on port: %d\n", grpcPort)
 	if err := grpcServer.Serve(lis); err != nil {

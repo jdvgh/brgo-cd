@@ -7,6 +7,11 @@ tasks:
   gitserver:
     cmds:
       -  docker run  --network=brgo --rm -v brgo-cd:/brgo-cd -p 50051:50051 -e TMP_DIR_PREFIX=/brgo-cd --name brgo-cd-gitserver brgo-cd/gitserver:0.0.1
+  git:
+    env:
+      TMP_DIR_PREFIX: /tmp
+    cmds:
+      - go run ./gitserver/service
   apply:
     env:
       BRGO_GIT_SERVER_BASE_URL: 0.0.0.0:50051
@@ -32,4 +37,13 @@ tasks:
   build_base_kubectl:
     cmds:
       - docker build -t brgo-cd/bases/kubectl:0.0.1 -f images/bases/kubectl/Dockerfile images/bases/kubectl
+  build_bases:
+    cmds:
+      - task: build_base_ubuntu
+      - task: build_base_git
+      - task: build_base_kubectl
+  build_others:
+    cmds:
+      - task: build_applyserver
+      - task: build_gitserver 
 
