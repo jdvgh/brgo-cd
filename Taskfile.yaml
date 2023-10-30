@@ -27,38 +27,70 @@ tasks:
     cmds:
       - docker run --network=brgo --rm -v $(pwd)/kubeconfig.yaml:/mnt/kubeconfig.yaml:ro --volumes-from brgo-cd-gitserver -e BRGO_GIT_SERVER_BASE_URL=brgo-cd-gitserver:50051 brgo-cd/applyserver:0.0.1
   build_gitserver:
+    vars:
+      BUILDER: '{{default "docker" .BUILDER}}'
     cmds:
-      -  docker build -t brgo-cd/gitserver:0.0.1 -f images/gitserver/Dockerfile .
+      - '{{.BUILDER}} build -t brgo-cd/gitserver:0.0.1 -f images/gitserver/Dockerfile .'
   build_applyserver:
+    vars:
+      BUILDER: '{{default "docker" .BUILDER}}'
     cmds:
-      - docker build -t brgo-cd/applyserver:0.0.1 -f images/applyserver/Dockerfile .
+      - '{{.BUILDER}} build -t brgo-cd/applyserver:0.0.1 -f images/applyserver/Dockerfile .'
   build_base_git:
+    vars:
+      BUILDER: '{{default "docker" .BUILDER}}'
     cmds:
-      - docker build -t brgo-cd/bases/git:0.0.1 -f images/bases/git/Dockerfile images/bases/git
+      - '{{.BUILDER}} build -t brgo-cd/bases/git:0.0.1 -f images/bases/git/Dockerfile images/bases/git'
   build_base_ubuntu:
+    vars:
+      BUILDER: '{{default "docker" .BUILDER}}'
     cmds:
-      - docker build -t brgo-cd/bases/ubuntu:22.04 -f images/bases/ubuntu/Dockerfile images/bases/ubuntu
+      - '{{.BUILDER}} build -t brgo-cd/bases/ubuntu:22.04 -f images/bases/ubuntu/Dockerfile images/bases/ubuntu'
   build_base_kubectl:
+    vars:
+      BUILDER: '{{default "docker" .BUILDER}}'
     cmds:
-      - docker build -t brgo-cd/bases/kubectl:0.0.1 -f images/bases/kubectl/Dockerfile images/bases/kubectl
+      - '{{.BUILDER}} build -t brgo-cd/bases/kubectl:0.0.1 -f images/bases/kubectl/Dockerfile images/bases/kubectl'
   build_base_ci:
+    vars:
+      BUILDER: '{{default "docker" .BUILDER}}'
     cmds:
-      - docker build -t brgo-cd/bases/ci:0.0.1 -f images/bases/ci/Dockerfile images/bases/ci
+      - '{{.BUILDER}} build -t brgo-cd/bases/ci:0.0.1 -f images/bases/ci/Dockerfile images/bases/ci'
   build_bases:
+    vars:
+      BUILDER: '{{default "docker" .BUILDER}}'
     cmds:
       - task: build_base_ubuntu
+        vars: { BUILDER: '{{.BUILDER}}' }
       - task: build_base_git
+        vars: { BUILDER: '{{.BUILDER}}' }
       - task: build_base_kubectl
+        vars: { BUILDER: '{{.BUILDER}}' }
       - task: build_base_ci
+        vars: { BUILDER: '{{.BUILDER}}' }
   build_others:
+    vars:
+      BUILDER: '{{default "docker" .BUILDER}}'
     cmds:
       - task: build_applyserver
+        vars: { BUILDER: '{{.BUILDER}}' }
       - task: build_gitserver 
+        vars: { BUILDER: '{{.BUILDER}}' }
   build_all:
+    vars:
+      BUILDER: '{{default "docker" .BUILDER}}'
     cmds:
       - task: build_bases
+        vars: { BUILDER: '{{.BUILDER}}' }
       - task: build_others
-  test_all:
+        vars: { BUILDER: '{{.BUILDER}}' }
+  build_all_buildah:
     cmds:
-      - go test -v ./applyserver
-      - go test -v ./gitserver/service
+      - task: build_all
+        vars: { BUILDER: 'buildah' }
+  build_go:
+    cmds:
+      - go build -v ./...
+  test_go:
+    cmds:
+      - go test -v ./...

@@ -37,8 +37,10 @@ jobs:
         export PATH=$PATH:/usr/local/go/bin
 
     - name: Build
-      run: go build -v ./...
+      run:  task build_go
 
     - name: Test
-      run: go test -v ./...
+      run: task test_go
 
+    - name: Buildah Action
+      run: task build_all_buildah
