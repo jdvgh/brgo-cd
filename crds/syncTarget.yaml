@@ -1,0 +1,7 @@
+apiVersion: brgo.jdvgh.com/v1alpha
+kind: SyncTarget
+metadata:
+  name: jdvgh-sample-manifest
+spec:
+  repoUrl: https://github.com/jdvgh/sample-manifests.git
+  path: k8s/overlays/k3s
